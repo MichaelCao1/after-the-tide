@@ -1,0 +1,24 @@
+# Dependencies, local files and generated archives
+node_modules/
+.DS_Store
+*.zip
+__pycache__/
+*.py[cod]
+.env
+.env.*
+
+# Historical internal QA traces, not current release evidence
+screenshots/
+tests/browser*/
+tests/qa-*.log
+tests/QA-RESULTS.md
+tests/ACCESSIBILITY-AUDIT.md
+tests/INDEPENDENT-REVIEW.md
+tests/NARRATIVE-REVIEW.md
+ART_REVIEW.md
+PROGRESS.md
+START-HERE.md
+CHANGELOG.md
+CHECKSUMS.sha256
+
+# dist/ and the standalone HTML are deliberately committed for immediate play.
