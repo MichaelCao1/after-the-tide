@@ -1,0 +1,16 @@
+// Simulation regression only: exercises move/tick/actions; not browser/raycast acceptance.
+import assert from 'node:assert/strict';
+import {Game,V,distance} from '../src/game.js';
+import * as THREE from 'three';import{createWorld}from '../src/world.js';
+const ctx=new Proxy({createRadialGradient:()=>({addColorStop(){}}),createLinearGradient:()=>({addColorStop(){}})},{get:(o,k)=>k in o?o[k]:()=>{}});globalThis.document={createElement:()=>({width:512,height:512,getContext:()=>ctx})};
+const colliders=createWorld(new THREE.Scene()).colliders;
+function harness(){const g=new Game();g.colliders=colliders;const tick=(t,id='',allowDeath=false)=>{for(let i=0;i<t*60;i++){g.tick(1/60);g.updateHold(id,1/60);if(g.failed&&!allowDeath)throw Error('Unexpected death')}};const walk=(x,z)=>{let n=0;while(distance(g.player,V(x,0,z))>.08&&n++<20000){g.move(x-g.player.x,z-g.player.z,1/60);tick(1/60)}assert(n<20000,'Movement blocked '+JSON.stringify(g.player)+' target '+x+','+z)};return{g,tick,walk};}
+function entry(h){const{g,tick,walk}=h;walk(3.2,4.6);g.act('latch');g.act('pickup');walk(0,-6);g.act('bell');g.capture();walk(0,-11);g.place();walk(0,-6);tick(10);assert.equal(g.phase,3);walk(0,-11);g.retrieve();walk(0,-17.5);walk(-6.3,-17.5);}
+function pump(h){const{g,tick,walk}=h;walk(-6.3,-22);g.act('pipe');g.capture();walk(-6.3,-29);g.place();walk(-6.3,-22);tick(7);walk(-6.3,-29);walk(-4.3,-27);walk(-4.3,-23.5);tick(5.6,'inlet');walk(-4.3,-28.5);walk(5.2,-29.5);tick(7.1,'valve');walk(2.0,-29.5);walk(-6.0,-32.2);tick(4.1,'power');walk(-4.8,-33.8);assert.equal(g.phase,4);}
+function finale(h){const{g,tick,walk}=h;walk(-4.8,-34.4);walk(2,-34.4);walk(2,-38);walk(4,-40);g.act('terminal-pipe');g.capture();walk(0,-38);g.place();walk(0,-43.1);g.act('machine');walk(4,-42);tick(25);walk(0,-43.1);g.act('machine');assert(g.paper,'Paper must be collectible');walk(2,-38);walk(2,-34);walk(-5,-34);walk(-6.3,-30);walk(-6.3,-17.5);walk(0,-17.5);walk(0,3.5);walk(3.2,4.6);g.act('exit');assert(g.ended);}
+// Mistake: stay on top of replay machine on lower floor rather than leave it.
+let h=harness();entry(h);h.walk(-6.3,-29);h.g.act('pipe');h.g.capture();h.g.place();h.tick(30,'',true);assert(h.g.failed,'Bad lure should be dangerous');h.g.restore();assert.equal(h.g.player.y,3);assert(h.g.hasRecorder&&h.g.clip.length&&!h.g.device);pump(h);finale(h);console.log('PASS mistake -> failure -> checkpoint -> full completion',h.g.time);
+// Mistake is recoverable: make loud bait, retreat to dry height, re-collect later.
+h=harness();entry(h);h.walk(-6.3,-29);h.g.act('pipe');h.g.capture();h.g.place();h.tick(5);h.walk(-6.3,-21);h.tick(24);assert(!h.g.failed);h.walk(-6.3,-29);assert(h.g.retrieve());h.walk(-6.3,-21);pump(h);finale(h);console.log('PASS misplaced bait -> retreat -> retrieve -> completion',h.g.time);
+// Caller-level pause contract: no game ticks means countdown, target and time unchanged.
+h=harness();entry(h);h.g.place();const before=JSON.stringify({time:h.g.time,device:h.g.device,threat:h.g.threat});await new Promise(r=>setTimeout(r,100));assert.equal(JSON.stringify({time:h.g.time,device:h.g.device,threat:h.g.threat}),before);console.log('PASS simulation pause contract; browser blur/menu integration still unverified');
