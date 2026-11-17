@@ -1,0 +1,9 @@
+import assert from 'node:assert/strict';
+import {Game} from '../src/game.js';
+import {makeSave,parseSave,loadCheckpoint,stages,milestone} from '../src/save.js';
+const g=new Game();assert.equal(makeSave(g),null);
+for(const stage of stages){const data={version:1,stage,time:92,stats:{events:25,replays:3,deaths:0,walked:70},clip:[{time:1,type:'knock',strength:5}]};const raw=JSON.stringify(data);assert.deepEqual(parseSave(raw),data);const restored=new Game();assert(loadCheckpoint(restored,data));assert.equal(milestone(restored),stage);assert(!restored.device);assert(!restored.failed);assert.equal(restored.time,92);assert.equal(restored.clip.length,1);if(['learned','inlet','valve'].includes(stage))assert.equal(restored.player.y,3);if(stage==='recorder')assert.equal(restored.phase,2);if(stage==='valve'){assert(restored.inlet&&restored.valve&&!restored.power);assert.equal(restored.phase,3);}restored.tick(.05);assert(!restored.failed);}
+const valid={version:1,stage:'valve',time:10,stats:{events:1,replays:1,deaths:0,walked:10},clip:[]};
+for(const malformed of [null,'', '{}','[]','broken',JSON.stringify({...valid,version:2}),JSON.stringify({...valid,stage:'complete'}),JSON.stringify({...valid,time:-1}),JSON.stringify({...valid,stats:{}}),JSON.stringify({...valid,clip:[{type:'<script>',time:0,strength:1}]}),JSON.stringify({...valid,clip:[{type:'knock',time:6,strength:1}]})])assert.equal(parseSave(malformed),null);
+const hostile=JSON.stringify({...valid,player:{x:999,y:99,z:999},power:true,__proto__:{admin:true}});assert(!('player' in parseSave(hostile)));assert(!('power' in parseSave(hostile)));assert(!loadCheckpoint(g,{version:999}));
+console.log('PASS persistent checkpoints: seven stages, safe positions, no tutorial skip, valve continuity, corrupt/version/type/bounds rejection, unknown field exclusion');
