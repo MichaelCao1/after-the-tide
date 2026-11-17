@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>退潮之后 · 第 07 号海岸潮汐观测站</title>
+  <script type="module" crossorigin src="/assets/index-bb4f9598.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-ddc633f9.css">
+</head>
+<body>
+  <canvas id="game" aria-label="第一人称海岸观测站游戏画面"></canvas>
+  <div id="vignette"></div>
+
+  <div id="hud">
+    <div id="topHud">
+      <div id="location">01 / 入口值班室</div>
+      <div id="objective"></div>
+    </div>
+
+    <div id="reticleWrap">
+      <div id="crosshair"><i></i></div>
+    </div>
+
+    <div id="feedbackStack">
+      <div id="dangerAlert" role="status" hidden></div>
+      <div id="promptWrap">
+        <div id="prompt"></div>
+        <div id="promptSub"></div>
+        <div id="hold">
+          <i id="holdFill"></i>
+          <span id="holdTicks"></span>
+        </div>
+      </div>
+      <div id="notice" role="status" aria-live="polite"></div>
+      <div id="caption"></div>
+    </div>
+
+    <div id="recorderHud">
+      <div class="rec-header">
+        <span id="recTitle">PORTABLE TAPE · 06s</span>
+        <span id="moveBadge" class="badge">常步</span>
+      </div>
+      <div id="tapeTrack"><i id="tapeFill"></i><div id="tapeBlips"></div></div>
+      <div id="recStatus">待拾取便携录放机</div>
+    </div>
+
+  </div>
+
+  <div id="menu">
+    <div class="panel">
+      <label class="language-row"><span>语言 / Language</span>
+        <select id="language" aria-label="语言 / Language">
+          <option value="zh-CN">简体中文</option>
+          <option value="en">English</option>
+        </select>
+      </label>
+      <div class="eyebrow" data-i18n>海岸水文档案 · 第 07 号站 · 04:00 CST</div>
+      <h1 data-i18n>退潮之后</h1>
+      <div id="menuSubtitle" class="subtitle">AFTER THE TIDE</div>
+      <div class="divider"></div>
+      <p id="menuText">凌晨四点，封站前最后一次交接。<br>外海的潮水已经退尽，站里的积水却还在往上涨。</p>
+
+      <div class="menu-actions">
+        <button id="continue" class="btn-primary" hidden data-i18n>继续上次值班</button>
+        <button id="start" class="btn-primary">进入观测站</button>
+        <button id="checkpoint" class="btn-primary" hidden data-i18n>从安全检查点恢复</button>
+        <button id="restart" class="btn-secondary" hidden data-i18n>重新开始本轮值班</button>
+      </div>
+      <p id="saveStatus" class="fine status-line"></p>
+
+      <details id="settingsPanel">
+        <summary data-i18n>设置与键鼠操作</summary>
+        <div class="settings-body">
+          <label><span data-i18n>渲染画质</span>
+            <select id="quality">
+              <option value="1" data-i18n>标准 · 动态阴影与水面反射</option>
+              <option value="0" data-i18n>低配 · 降低分辨率并关闭阴影</option>
+            </select>
+          </label>
+          <label><span data-i18n>主音量</span> <input id="volume" type="range" min="0" max="1" step="0.01" value="0.7"></label>
+          <label><span data-i18n>鼠标灵敏度</span> <input id="sensitivity" type="range" min="0.3" max="2" step="0.05" value="1"></label>
+          <label><span data-i18n>画面亮度</span> <input id="brightness" type="range" min="0.65" max="1.6" step="0.05" value="1"></label>
+          <label class="check-row"><input id="captions" type="checkbox" checked> <span data-i18n>开启声音方向字幕</span></label>
+          <label class="check-row"><input id="reduce" type="checkbox" checked> <span data-i18n>减少步伐镜头晃动</span></label>
+          <div class="keys">
+            <div data-i18n><b>WASD</b> 移动 · <b>鼠标 / 方向键</b> 环顾</div>
+            <div data-i18n><b>Shift</b> 按住奔跑（脚步响、易惊动水下） · <b>Caps Lock</b> 切换轻步慢走</div>
+            <div data-i18n><b>E</b> 交互 / 按住操作（阀门带止回棘爪，松手保留锁档进度）</div>
+            <div data-i18n><b>R</b> 录下刚过去 6 秒声响 · <b>Q</b> 放下录放机（4 秒后原地回放）</div>
+            <div data-i18n><b>Esc</b> 暂停菜单 · 靠近地面录放机对准按 <b>E</b> 取回</div>
+          </div>
+        </div>
+      </details>
+
+      <div class="fine footer-note" data-i18n>原创程序化建筑、机械与声学模拟 · 佩戴耳机体验更佳<br>包含水下声源追踪与轻微灯光闪烁，不调用麦克风或网络</div>
+    </div>
+  </div>
+
+  <section id="documentPanel" hidden>
+    <article>
+      <div class="eyebrow" data-i18n>第 07 号潮汐观测站 · 纸质留存原件</div>
+      <h2 id="documentTitle"></h2>
+      <div id="documentText"></div>
+      <button id="closeDocument" data-i18n>合上记录 · E / Esc</button>
+      <small data-i18n>阅读期间时间与水下移动已暂停。</small>
+    </article>
+  </section>
+
+  <div id="sizeWarning" data-i18n>请使用桌面浏览器，并将窗口扩大至至少 900 × 560。<br>本游戏需要键盘、鼠标与 WebGL 2。</div>
+  
+</body>
+</html>
