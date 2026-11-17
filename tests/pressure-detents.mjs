@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {Game,V} from '../src/game.js';
+const g=new Game();g.phase=3;g.hasRecorder=true;
+for(let i=0;i<120;i++)g.updateHold('inlet',1/60);
+assert(g.inletProgress>1.9&&!g.inlet);g.updateHold('',.05);assert.equal(g.hold,0);
+for(let i=0;i<220;i++)g.updateHold('inlet',1/60);
+assert(g.inlet,'partial progress survives release');
+for(let i=0;i<150;i++)g.updateHold('valve',1/60);
+g.updateHold('',.05);const partial=g.valveProgress;
+for(let i=0;i<150;i++)g.updateHold('valve',1/60);
+assert(g.valveProgress>partial&&!g.valve);g.updateHold('',.05);
+for(let i=0;i<130;i++)g.updateHold('valve',1/60);assert(g.valve);
+const e=[];const h=new Game(x=>e.push(x));h.phase=3;h.act('pump-listen');
+assert(e.some(x=>x.type==='pump'&&x.pos.x===7));assert.deepEqual(h.threat.target,V(7,0,-25));
+h.act('gauge-upper');h.act('gauge-lower');assert(h.observations['gauge-upper']&&h.observations['gauge-lower']);
+h.reset();assert.equal(h.inletProgress,0);assert.deepEqual(h.observations,{});
+console.log('PASS pressure detents: release/reposition/resume; pump test real source; observations reset');
